@@ -392,8 +392,8 @@ security definer
 set search_path = public
 as $$
 declare
-  account_id uuid;
-  risk_profile_id uuid;
+  v_account_id uuid;
+  v_risk_profile_id uuid;
 begin
   insert into public.profiles (id, display_name, timezone, base_currency)
   values (target_user_id, coalesce(split_part(target_email, '@', 1), 'Trader'), 'America/Mexico_City', 'USD')
@@ -402,7 +402,7 @@ begin
   insert into public.accounts (user_id, name, market_types, base_currency, starting_balance, is_default)
   values (target_user_id, 'Main Trading Account', array['crypto_futures'::market_type, 'cfd'::market_type], 'USD', 0, true)
   on conflict (user_id, name) do update set is_default = true
-  returning id into account_id;
+  returning id into v_account_id;
 
   insert into public.symbols (user_id, symbol, base_asset, quote_asset, market_type, is_default, sort_order)
   values
@@ -418,16 +418,16 @@ begin
   on conflict (user_id, name) do nothing;
 
   insert into public.risk_profiles (user_id, account_id, max_risk_per_trade_pct, daily_loss_limit_amount, weekly_loss_limit_amount, max_consecutive_losses, cooldown_minutes_after_stop)
-  values (target_user_id, account_id, 1, 300, 1000, 2, 30)
+  values (target_user_id, v_account_id, 1, 300, 1000, 2, 30)
   on conflict (user_id, account_id) do update set account_id = excluded.account_id
-  returning id into risk_profile_id;
+  returning id into v_risk_profile_id;
 
   insert into public.risk_rules (user_id, profile_id, code, name, enabled, severity, params)
   values
-    (target_user_id, risk_profile_id, 'max_risk_per_trade', 'Max risk per trade', true, 'block', '{"maxPct":1}'::jsonb),
-    (target_user_id, risk_profile_id, 'daily_loss_limit', 'Daily loss limit', true, 'block', '{"amount":300}'::jsonb),
-    (target_user_id, risk_profile_id, 'loss_streak_cutoff', 'Loss streak cutoff', true, 'warn', '{"maxLosses":2}'::jsonb),
-    (target_user_id, risk_profile_id, 'cooldown_after_stop', 'Cooldown after stop-out', true, 'warn', '{"minutes":30}'::jsonb)
+    (target_user_id, v_risk_profile_id, 'max_risk_per_trade', 'Max risk per trade', true, 'block', '{"maxPct":1}'::jsonb),
+    (target_user_id, v_risk_profile_id, 'daily_loss_limit', 'Daily loss limit', true, 'block', '{"amount":300}'::jsonb),
+    (target_user_id, v_risk_profile_id, 'loss_streak_cutoff', 'Loss streak cutoff', true, 'warn', '{"maxLosses":2}'::jsonb),
+    (target_user_id, v_risk_profile_id, 'cooldown_after_stop', 'Cooldown after stop-out', true, 'warn', '{"minutes":30}'::jsonb)
   on conflict (profile_id, code) do nothing;
 end;
 $$;
