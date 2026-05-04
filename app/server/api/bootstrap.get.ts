@@ -1,8 +1,8 @@
 export default defineEventHandler(async (event) => {
-  const { supabase } = await requireSupabaseUser(event)
+  const { supabase, user } = await requireSupabaseUser(event)
 
   const [profile, accounts, symbols, setups] = await Promise.all([
-    supabase.from('profiles').select('*').single(),
+    supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
     supabase.from('accounts').select('*').is('deleted_at', null).order('is_default', { ascending: false }),
     supabase.from('symbols').select('*').is('deleted_at', null).order('sort_order'),
     supabase.from('setups').select('*').is('deleted_at', null).order('name')
@@ -12,10 +12,26 @@ export default defineEventHandler(async (event) => {
     if (result.error) throw createError({ statusCode: 500, statusMessage: result.error.message })
   }
 
+  let profileData = profile.data
+  if (!profileData) {
+    const { data: created } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,
+        display_name: user.email?.split('@')[0] ?? 'Trader',
+        timezone: 'America/Mexico_City',
+        base_currency: 'USD'
+      })
+      .select('*')
+      .single()
+    profileData = created
+  }
+
   return {
-    profile: profile.data,
+    profile: profileData,
     accounts: accounts.data ?? [],
     symbols: symbols.data ?? [],
-    setups: setups.data ?? []
+    setups: setups.data ?? [],
+    user: { id: user.id, email: user.email }
   }
 })

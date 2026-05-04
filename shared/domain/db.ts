@@ -72,6 +72,7 @@ export const tradeRowToDomain = (row: TradeRow): Trade => ({
   executionScore: row.execution_score ?? undefined,
   emotion: row.emotion ?? undefined,
   result: row.result,
+  notes: row.notes ?? undefined,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
   deletedAt: row.deleted_at

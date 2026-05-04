@@ -1,6 +1,6 @@
 export type UUID = string
 export type CurrencyCode = 'USD' | 'USDT' | 'USDC' | 'BTC' | 'EUR'
-export type MarketType = 'crypto_spot' | 'crypto_futures' | 'futures' | 'forex' | 'stocks'
+export type MarketType = 'crypto_spot' | 'crypto_futures' | 'futures' | 'forex' | 'stocks' | 'commodities' | 'cfd'
 export type TradeSide = 'long' | 'short'
 export type TradeStatus = 'planned' | 'open' | 'closed' | 'void'
 export type TradeResult = 'win' | 'loss' | 'breakeven'
@@ -101,6 +101,7 @@ export interface Trade extends Auditable {
   executionScore?: number
   emotion?: string
   result: TradeResult
+  notes?: string
 }
 
 export interface Position extends Auditable {

@@ -2,19 +2,57 @@
 const route = defineModel<string>('route', { required: true })
 const range = defineModel<string>('range', { required: true })
 
-const workspaceItems = [
+const props = defineProps<{
+  displayName?: string
+  email?: string
+  tradeCount?: number
+  dayStreak?: number
+  isMarketOpen?: boolean
+}>()
+
+const emit = defineEmits<{ addTrade: [] }>()
+
+const workspaceItems = computed(() => [
   { id: 'overview', label: 'Overview', k: 'G O' },
-  { id: 'trades', label: 'Trades', k: 'G T', badge: '120' },
+  { id: 'trades', label: 'Trades', k: 'G T', badge: props.tradeCount ? String(props.tradeCount) : undefined },
   { id: 'analytics', label: 'Analytics', k: 'G A' },
   { id: 'journal', label: 'Journal', k: 'G J' },
   { id: 'playbook', label: 'Playbook', k: 'G P' },
   { id: 'risk', label: 'Risk', k: 'G R' }
-]
+])
 const systemItems = [
-  { id: 'imports', label: 'Imports', k: 'G I' },
   { id: 'settings', label: 'Settings', k: 'G ,' }
 ]
 const ranges = ['1D', '1W', '1M', '3M', 'YTD', 'ALL']
+
+const initials = computed(() => {
+  const source = props.displayName ?? props.email ?? 'Trader'
+  return source
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('') || 'T'
+})
+
+const clock = ref(new Date().toISOString().slice(11, 16))
+let clockTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  clockTimer = setInterval(() => {
+    clock.value = new Date().toISOString().slice(11, 16)
+  }, 30000)
+})
+onBeforeUnmount(() => {
+  if (clockTimer) clearInterval(clockTimer)
+})
+
+const marketLabel = computed(() => {
+  const hour = new Date().getUTCHours()
+  if (hour >= 13 && hour < 20) return { label: 'NY · OPEN', open: true }
+  if (hour >= 7 && hour < 16) return { label: 'LDN · OPEN', open: true }
+  if (hour >= 0 && hour < 8) return { label: 'ASIA · OPEN', open: true }
+  return { label: 'OFF · CLOSED', open: false }
+})
 </script>
 
 <template>
@@ -43,10 +81,10 @@ const ranges = ['1D', '1W', '1M', '3M', 'YTD', 'ALL']
         </button>
       </nav>
       <div class="sidebar-foot">
-        <div class="avatar">DM</div>
+        <div class="avatar">{{ initials }}</div>
         <div class="foot-meta">
-          <span class="foot-name">Diego Marin</span>
-          <span class="foot-sub">PRO · 60d streak</span>
+          <span class="foot-name">{{ displayName || email || 'Trader' }}</span>
+          <span class="foot-sub">{{ dayStreak && dayStreak > 0 ? `${dayStreak}d streak` : 'No streak' }}</span>
         </div>
       </div>
     </aside>
@@ -56,12 +94,12 @@ const ranges = ['1D', '1W', '1M', '3M', 'YTD', 'ALL']
       <div class="crumbs"><span>Workspace</span><span>/</span><strong>{{ route[0]?.toUpperCase() + route.slice(1) }}</strong></div>
       <div class="search"><AppIcon name="search" :size="12" /><input placeholder="Search trades, setups, tags..." /><span class="search-kbd">⌘K</span></div>
       <div class="spacer" />
-      <div class="market-status"><span class="dot-live" /><span>NY · OPEN</span><span class="muted">20:42 UTC</span></div>
+      <div class="market-status"><span :class="marketLabel.open ? 'dot-live' : 'dot-off'" /><span>{{ marketLabel.label }}</span><span class="muted">{{ clock }} UTC</span></div>
       <div class="range-picker">
         <button v-for="item in ranges" :key="item" :aria-pressed="range === item" @click="range = item">{{ item }}</button>
       </div>
       <button class="icon-btn" aria-label="Notifications"><AppIcon name="bell" /></button>
-      <button class="btn btn-primary"><AppIcon name="plus" :size="12" /> Log trade <span class="kbd">N</span></button>
+      <button class="btn btn-primary" @click="emit('addTrade')"><AppIcon name="plus" :size="12" /> Add trade <span class="kbd">N</span></button>
     </header>
 
     <main class="main">

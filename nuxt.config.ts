@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     }
   },
   imports: {
-    dirs: ['shared/domain', 'shared/data']
+    dirs: ['shared/domain']
   },
   typescript: {
     strict: true,

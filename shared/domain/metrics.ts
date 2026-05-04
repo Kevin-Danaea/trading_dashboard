@@ -99,6 +99,71 @@ export const calculatePerformance = (trades: Trade[], startingEquity = 0): Perfo
   }
 }
 
+export interface DailyStats {
+  count: number
+  netPnl: number
+  wins: number
+  losses: number
+  breakeven: number
+  bestR: number | null
+  worstR: number | null
+  avgR: number
+}
+
+export const dailyStats = (trades: Trade[], dayIso: string): DailyStats => {
+  const dayTrades = trades.filter((trade) => trade.openedAt.slice(0, 10) === dayIso && trade.status === 'closed')
+  const wins = dayTrades.filter((trade) => trade.netPnl > 0).length
+  const losses = dayTrades.filter((trade) => trade.netPnl < 0).length
+  const breakeven = dayTrades.length - wins - losses
+  const rs = dayTrades.map((trade) => trade.plannedRiskAmount > 0 ? trade.netPnl / trade.plannedRiskAmount : 0)
+  return {
+    count: dayTrades.length,
+    netPnl: dayTrades.reduce((sum, trade) => sum + trade.netPnl, 0),
+    wins,
+    losses,
+    breakeven,
+    bestR: rs.length > 0 ? Math.max(...rs) : null,
+    worstR: rs.length > 0 ? Math.min(...rs) : null,
+    avgR: rs.length > 0 ? rs.reduce((sum, r) => sum + r, 0) / rs.length : 0
+  }
+}
+
+export const tradesInRange = (trades: Trade[], fromIso: string, toIso: string) =>
+  trades.filter((trade) => trade.openedAt >= fromIso && trade.openedAt < toIso)
+
+export const currentLossStreak = (trades: Trade[]) => {
+  const sorted = trades
+    .filter((trade) => trade.status === 'closed')
+    .slice()
+    .sort((a, b) => (b.closedAt ?? b.openedAt).localeCompare(a.closedAt ?? a.openedAt))
+  let streak = 0
+  for (const trade of sorted) {
+    if (trade.netPnl < 0) streak += 1
+    else break
+  }
+  return streak
+}
+
+export const tradingDayStreak = (trades: Trade[]) => {
+  if (trades.length === 0) return 0
+  const days = new Set(trades.map((trade) => trade.openedAt.slice(0, 10)))
+  let streak = 0
+  const cursor = new Date()
+  while (true) {
+    const iso = cursor.toISOString().slice(0, 10)
+    if (days.has(iso)) {
+      streak += 1
+      cursor.setUTCDate(cursor.getUTCDate() - 1)
+    } else if (streak === 0) {
+      cursor.setUTCDate(cursor.getUTCDate() - 1)
+      if (Date.now() - cursor.getTime() > 7 * 86400000) break
+    } else {
+      break
+    }
+  }
+  return streak
+}
+
 export const setupPerformanceScore = (metrics: Pick<PerformanceMetrics, 'expectancy' | 'profitFactor' | 'winRate' | 'adherenceScore' | 'tradeCount'>) => {
   const sampleConfidence = Math.min(1, metrics.tradeCount / 30)
   const pfScore = Math.min(35, ((metrics.profitFactor ?? 0) / 2.5) * 35)
