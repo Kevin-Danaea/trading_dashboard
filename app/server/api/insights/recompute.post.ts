@@ -1,5 +1,5 @@
-import { calculatePerformance } from '../../../../shared/domain/metrics'
-import { tradeRowToDomain, type TradeRow } from '../../../../shared/domain/db'
+import { calculatePerformance } from '#shared/domain/metrics'
+import { tradeRowToDomain, type TradeRow } from '#shared/domain/db'
 
 export default defineEventHandler(async (event) => {
   const { supabase, user } = await requireSupabaseUser(event)

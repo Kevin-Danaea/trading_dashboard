@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Trade } from '../../../shared/domain/types'
-import { calculatePerformance } from '../../../shared/domain/metrics'
-import { formatCurrency, formatPercent, formatR, formatSignedCurrency } from '../../../shared/domain/format'
+import type { Trade } from '#shared/domain/types'
+import { calculatePerformance } from '#shared/domain/metrics'
+import { formatCurrency, formatPercent, formatR, formatSignedCurrency } from '#shared/domain/format'
 
 const props = defineProps<{
   trades: Trade[]

@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { TradeRow } from '../../../../shared/domain/db'
+import type { TradeRow } from '#shared/domain/db'
 
 const createTradeDto = z.object({
   accountId: z.string().uuid().optional(),

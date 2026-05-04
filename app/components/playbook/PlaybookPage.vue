@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { Trade } from '../../../shared/domain/types'
-import { calculatePerformance, setupPerformanceScore } from '../../../shared/domain/metrics'
-import { formatPercent, formatSignedCurrency } from '../../../shared/domain/format'
+import type { Trade } from '#shared/domain/types'
+import { calculatePerformance, setupPerformanceScore } from '#shared/domain/metrics'
+import { formatPercent, formatSignedCurrency } from '#shared/domain/format'
 
 type Setup = {
   id: string

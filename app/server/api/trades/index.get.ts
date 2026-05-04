@@ -1,4 +1,4 @@
-import { tradeRowToDomain, type TradeRow } from '../../../../shared/domain/db'
+import { tradeRowToDomain, type TradeRow } from '#shared/domain/db'
 
 export default defineEventHandler(async (event) => {
   const { supabase } = await requireSupabaseUser(event)

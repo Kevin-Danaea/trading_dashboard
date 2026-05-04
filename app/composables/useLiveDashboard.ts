@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js'
-import type { Trade } from '../../shared/domain/types'
-import { calculatePerformance, currentLossStreak, dailyStats, tradesInRange, tradingDayStreak } from '../../shared/domain/metrics'
-import { formatCurrency, formatPercent, formatR, formatSignedCurrency } from '../../shared/domain/format'
+import type { Trade } from '#shared/domain/types'
+import { calculatePerformance, currentLossStreak, dailyStats, tradesInRange, tradingDayStreak } from '#shared/domain/metrics'
+import { formatCurrency, formatPercent, formatR, formatSignedCurrency } from '#shared/domain/format'
 
 type BootstrapSymbol = {
   id: string

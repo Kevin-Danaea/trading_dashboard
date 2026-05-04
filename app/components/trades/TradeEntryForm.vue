@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Trade } from '../../../shared/domain/types'
+import type { Trade } from '#shared/domain/types'
 
 const props = defineProps<{
   symbols: Array<{ id: string; symbol: string; market_type: Trade['marketType'] }>

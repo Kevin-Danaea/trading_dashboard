@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatCurrency } from '../../../shared/domain/format'
+import { formatCurrency } from '#shared/domain/format'
 
 type RiskProfile = {
   id: string
